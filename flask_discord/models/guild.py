@@ -1,3 +1,4 @@
+import logging
 from .base import DiscordModelsBase
 from flask import current_app
 
@@ -45,7 +46,13 @@ class Guild(DiscordModelsBase):
         self.icon_hash = self._payload.get("icon")
         self.is_owner = self._payload.get("owner")
         self.permissions = self.__get_permissions(self._payload.get("permissions"))
-        self.features = [enums.GuildFeature(f.upper()) for f in self._payload["features"]]
+        features = []
+        for feature in  self._payload["features"]:
+            try:
+                features.append(enums.GuildFeature(feature.upper()))
+            except ValueError:
+                logging.error(f"Please report the missing feature {feature.upper()} to the project to be added in the GuildFeature enum!")
+        self.features = features
 
     @staticmethod
     def __get_permissions(permissions_value):
